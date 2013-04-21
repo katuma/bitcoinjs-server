@@ -2,6 +2,7 @@
 
 #include <node.h>
 #include <node_buffer.h>
+#include <node_internals.h>
 
 #include <openssl/ecdsa.h>
 #include <openssl/evp.h>
@@ -12,6 +13,8 @@
 using namespace std;
 using namespace v8;
 using namespace node;
+
+#include <string.h>
 
 int static inline EC_KEY_regenerate_key(EC_KEY *eckey, const BIGNUM *priv_key)
 {
@@ -321,7 +324,7 @@ BitcoinKey::ToDER(const Arguments& args)
   unsigned char *der_begin, *der_end;
   der_begin = der_end = (unsigned char *)malloc(der_size);
 
-  if (i2d_ECPrivateKey(key->ec, &der_end) != der_size) {
+  if (i2d_ECPrivateKey(key->ec, &der_end) != (int)der_size) {
     // TODO: ERROR: "Error from i2d_ECPrivateKey(key->ec, &der_end)"
     return scope.Close(Null());
   }
@@ -416,7 +419,7 @@ BitcoinKey::VerifySignature(const Arguments& args)
 }
 
 void
-BitcoinKey::VerifySignatureCallback(uv_work_t *req)
+BitcoinKey::VerifySignatureCallback(uv_work_t *req, int blah)
 {
   HandleScope scope;
   verify_sig_baton_t *baton = static_cast<verify_sig_baton_t *>(req->data);
@@ -543,7 +546,7 @@ BitcoinKey::SignSync(const Arguments& args)
   unsigned char *der_begin, *der_end;
   der_begin = der_end = (unsigned char *)malloc(der_size);
 
-  if (i2d_ECDSA_SIG(sig, &der_end) != der_size) {
+  if (i2d_ECDSA_SIG(sig, &der_end) != (int)der_size) {
     // TODO: ERROR: "Error from i2d_ECPrivateKey(key->ec, &der_end)"
     return scope.Close(Null());
   }

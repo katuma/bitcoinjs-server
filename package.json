@@ -14,7 +14,7 @@
   },
 
   "scripts": {
-    "install": "node-waf configure build",
+    "install": "node-gyp configure build --python=python2.7",
     "test": "vows --spec test/*.js"
   },
 
